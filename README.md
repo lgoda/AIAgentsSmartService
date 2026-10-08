@@ -31,7 +31,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/m
 # Specific target folder
 bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh) --target /path/to/project
 
-# All agents, symlink mode (updates automatically when this repo changes)
+# All agents, symlink mode (links into a clone kept in ~/.aiagents; git pull there updates every linked project)
 bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh) --agent all --mode link
 ```
 
@@ -293,7 +293,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/m
 --repo  PATH    target project path            (bootstrap-commands.sh only)
 ```
 
-`copy` — standalone files. `link` — symlinks; updating this repo updates all linked projects.
+`copy` — standalone files. `link` — symlinks; updating the linked clone updates all linked projects (`install.sh` keeps it in `$AIAGENTS_HOME`, default `~/.aiagents`). On Windows without symlink support, files are copied and a warning is printed.
 
 ### What gets installed
 

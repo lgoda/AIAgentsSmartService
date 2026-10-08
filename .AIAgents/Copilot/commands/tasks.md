@@ -13,7 +13,7 @@ Steps:
 1. Read `.ai/current` to get the spec directory.
 2. Read `plan.md`.
 3. Break each phase into atomic tasks (one file or one concern per task).
-4. For each task record: id, title, domain (backend/frontend/data/testing/devops/automation), optional skills (stack skills the task needs), depends-on, status (todo).
+4. For each task record: id, title, domain (backend/frontend/data/testing/devops/automation), an optional `Skills:` line (stack skills the task needs), depends-on, status (todo).
 5. Save `tasks.md` in the same directory.
 6. Return task count per domain and the critical path.
 

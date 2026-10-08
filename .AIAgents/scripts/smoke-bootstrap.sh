@@ -27,6 +27,11 @@ check() {
 # agent source dir -> skills dir in the target project
 AGENT_DIRS="Claude:.claude/skills Codex:.codex/skills Gemini:.gemini/skills Copilot:.github/skills"
 
+# Portable in-place edit (BSD and GNU sed differ on -i).
+edit_in_place() {
+  sed "$1" "$2" > "$2.tmp" && mv "$2.tmp" "$2"
+}
+
 write_fixture_skill() {
   local dir="$1"
   local name="$2"
@@ -43,7 +48,7 @@ bootstrap() {
 }
 
 symlinks_supported() {
-  ln -s "$TMP/probe-src" "$TMP/probe-link" 2>/dev/null
+  ln -sfn "$TMP/probe-src" "$TMP/probe-link" 2>/dev/null
   [[ -L "$TMP/probe-link" ]]
 }
 
@@ -108,18 +113,40 @@ test_link_mode() {
 }
 
 test_collision_guard() {
-  local t="$TMP/collide"
+  local t="$TMP/collide" s="$TMP/collide/.claude/skills"
   write_fixture_skill "$MOD/_shared/skills" "zz-collide"
-  mkdir -p "$t/.claude/skills/zz-collide" "$t/.claude/skills/zz-fixture" "$t/.claude/skills/backend"
-  printf 'project-authored\n' > "$t/.claude/skills/zz-collide/SKILL.md"
-  printf -- '---\nmetadata:\n  managed-by: aiagents\n---\nstale\n' > "$t/.claude/skills/zz-fixture/SKILL.md"
-  printf 'old legacy backend\n' > "$t/.claude/skills/backend/SKILL.md"
+  mkdir -p "$s/zz-collide" "$s/zz-fixture" "$s/backend" "$s/frontend"
+  printf 'project-authored\n' > "$s/zz-collide/SKILL.md"
+  printf -- '---\nmetadata:\n  managed-by: aiagents\n---\nstale\n' > "$s/zz-fixture/SKILL.md"
+  printf 'my own backend skill\n' > "$s/backend/SKILL.md"
+  printf -- '---\nname: frontend\ndescription: mine\n---\nFramework skills carry managed-by: aiagents.\n' > "$s/frontend/SKILL.md"
   bootstrap "$t" --agent claude --mode copy > "$TMP/collide.log" 2>&1
-  check "AC6 unmarked project skill left unchanged" test "$(cat "$t/.claude/skills/zz-collide/SKILL.md")" = "project-authored"
+  check "AC6 unmarked project skill left unchanged" test "$(cat "$s/zz-collide/SKILL.md")" = "project-authored"
   check "AC6 warning names the skipped skill" grep -q "zz-collide" "$TMP/collide.log"
-  check "marked skill is updated" grep -q "# zz-fixture" "$t/.claude/skills/zz-fixture/SKILL.md"
-  check "legacy-named unmarked skill is updated" grep -q "name: backend" "$t/.claude/skills/backend/SKILL.md"
+  check "marked skill is updated" grep -q "# zz-fixture" "$s/zz-fixture/SKILL.md"
+  check "project skill with a framework name is kept" test "$(cat "$s/backend/SKILL.md")" = "my own backend skill"
+  check "marker mentioned only in the body does not count" grep -q "description: mine" "$s/frontend/SKILL.md"
+  check "skipped stack skill is not listed in CLAUDE.md" bash -c "! grep -q 'skills/zz-collide/SKILL.md' '$t/CLAUDE.md'"
   rm -rf "$MOD/_shared/skills/zz-collide"
+}
+
+# Content of a SKILL.md as first shipped, before the managed marker existed.
+legacy_skill_content() {
+  local repo="$SRC_MODULE/.." path=".AIAgents/Claude/skills/data/SKILL.md"
+  git -C "$repo" show "$(git -C "$repo" rev-list HEAD -- "$path" | tail -1):$path"
+}
+
+test_link_then_copy() {
+  local t="$TMP/relink"
+  if ! symlinks_supported; then
+    echo "SKIP  link then copy: symlinks unsupported on this host"
+    return 0
+  fi
+  bootstrap "$t" --agent claude --mode link > /dev/null 2>&1
+  bootstrap "$t" --agent claude --mode copy > /dev/null 2>&1
+  local rc=$?
+  check "copy mode over an earlier link install exits 0" test "$rc" -eq 0
+  check "copy mode replaces links with files" test ! -L "$t/.claude/skills/zz-fixture/SKILL.md"
 }
 
 test_single_agent() {
@@ -146,6 +173,12 @@ test_install_sh() {
   local rc=$?
   check "AC4 install.sh --agent copilot --source <clone> exits 0" test "$rc" -eq 0
   check "AC4 copilot files installed" test -d "$t/.copilot/commands" -a -f "$t/.github/skills/zz-fixture/references/ref.md"
+  mkdir -p "$TMP/inst-link"
+  AIAGENTS_HOME="$TMP/home" bash "$SRC_MODULE/../install.sh" --source "$repo" --agent claude --mode link --target "$TMP/inst-link" > "$TMP/inst-link.log" 2>&1
+  rc=$?
+  check "install.sh --mode link exits 0" test "$rc" -eq 0
+  check "install.sh --mode link: installed files still resolve after install" test -f "$TMP/inst-link/.claude/skills/zz-fixture/references/ref.md"
+  check "install.sh --mode link keeps its source clone" test -d "$TMP/home/srcrepo/.git"
 }
 
 test_upgrade() {
@@ -153,15 +186,15 @@ test_upgrade() {
   bootstrap "$t" --agent all --mode copy > /dev/null 2>&1
   printf 'KEEP-ME\n' >> "$t/.ai/project-context.md"
   mkdir -p "$t/docs" && printf 'mine\n' > "$t/docs/keep.md"
-  # simulate a pre-marker install: strip the marker from installed skills
-  find "$t/.claude/skills" "$t/.codex/skills" -name SKILL.md -exec sed -i '/managed-by: aiagents/d' {} +
+  # simulate an install from an older release: put back a version shipped before the marker existed
+  legacy_skill_content > "$t/.claude/skills/data/SKILL.md"
   (cd "$t" && find . -type f | sort) > "$TMP/files-before.txt"
   bootstrap "$t" --agent all --mode copy > /dev/null 2>&1
   (cd "$t" && find . -type f | sort) > "$TMP/files-after.txt"
   check "AC5 project-context.md content preserved" grep -q "KEEP-ME" "$t/.ai/project-context.md"
   check "AC5 no previously installed file deleted" test -z "$(comm -23 "$TMP/files-before.txt" "$TMP/files-after.txt")"
   check "AC5 unrelated project files untouched" test "$(cat "$t/docs/keep.md")" = "mine"
-  check "AC5 legacy skills regain the marker" grep -q "managed-by: aiagents" "$t/.claude/skills/backend/SKILL.md"
+  check "AC5 a skill installed by an older release is upgraded" grep -q "managed-by: aiagents" "$t/.claude/skills/data/SKILL.md"
 }
 
 test_startup_files() {
@@ -192,6 +225,8 @@ test_startup_files() {
 }
 
 files_missing_automation() {
+  # No file may still state the old domain count.
+  grep -rlIiE --include='*.md' --include='*.sh' '\b(5|five) (standard )?domains?\b' "$SRC_MODULE" "$SRC_MODULE/../README.md"
   local file
   # Workflow files that must mention the automation domain.
   for file in "$SRC_MODULE"/*/commands/{scan,tasks,implement,fix}.md "$SRC_MODULE"/Claude/skills/{scan,tasks,implement,fix}/SKILL.md; do
@@ -203,6 +238,7 @@ files_missing_automation() {
         grep -i 'backend.*devops' "$file" | grep -viE '^(do not load|LEGACY_SKILLS)' | grep -qvi 'automation' && echo "$file"
       done
   # Every agent ships the automation domain skill with the managed marker.
+
   for file in "$SRC_MODULE"/{Claude,Codex,Gemini,Copilot}/skills/automation/SKILL.md; do
     grep -q 'managed-by: aiagents' "$file" || echo "$file"
   done
@@ -236,11 +272,11 @@ test_lint_script() {
   printf 'acmecorp\n' > "$TMP/lint-deny.txt"
   check "lint accepts a good skill" bash "$MOD/scripts/lint-skills.sh" "$dir" "$TMP/lint-deny.txt"
   f="$dir/good/SKILL.md"
-  lint_rejects "name differs from directory" "sed -i 's/^name: good/name: other/' $dir/good/SKILL.md"
-  lint_rejects "missing description" "sed -i '/^description:/d' $dir/good/SKILL.md"
-  lint_rejects "missing managed marker" "sed -i '/managed-by/d' $dir/good/SKILL.md"
+  lint_rejects "name differs from directory" "edit_in_place 's/^name: good/name: other/' $dir/good/SKILL.md"
+  lint_rejects "missing description" "edit_in_place '/^description:/d' $dir/good/SKILL.md"
+  lint_rejects "missing managed marker" "edit_in_place '/managed-by/d' $dir/good/SKILL.md"
   lint_rejects "SKILL.md over 600 words" "yes word | head -700 >> $dir/good/SKILL.md"
-  lint_rejects "missing Verification section" "sed -i '/^## Verification/d' $dir/good/SKILL.md"
+  lint_rejects "missing Verification section" "edit_in_place '/^## Verification/d' $dir/good/SKILL.md"
   lint_rejects "reference without Last verified" "printf '# ref\n' > $dir/good/references/ref.md"
   lint_rejects "reference over 1800 words" "yes word | head -1900 >> $dir/good/references/ref.md"
   lint_rejects "denylist match" "printf 'Built for AcmeCorp\n' >> $dir/good/SKILL.md"
@@ -304,6 +340,7 @@ test_copy_install
 test_override
 test_link_mode
 test_collision_guard
+test_link_then_copy
 test_single_agent
 test_install_sh
 test_upgrade

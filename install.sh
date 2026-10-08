@@ -53,12 +53,29 @@ echo "  Mode   : $MODE"
 echo "  Source : $REPO_URL"
 echo ""
 
-echo "Cloning AIAgents source..."
-git clone --quiet --depth 1 "$REPO_URL" "$TMP_DIR"
+if [[ "$MODE" == "link" ]]; then
+  # Links must point at a clone that outlives this script; update it later with git pull.
+  SRC_DIR="${AIAGENTS_HOME:-$HOME/.aiagents}/$(basename "$REPO_URL" .git)"
+  if [[ -d "$SRC_DIR/.git" ]]; then
+    if [[ "$(git -C "$SRC_DIR" remote get-url origin)" != "$REPO_URL" ]]; then
+      echo "Existing clone at $SRC_DIR points to another repository. Remove it or set AIAGENTS_HOME." >&2; exit 1
+    fi
+    echo "Updating AIAgents source in $SRC_DIR..."
+    git -C "$SRC_DIR" pull --quiet --ff-only
+  else
+    echo "Cloning AIAgents source into $SRC_DIR..."
+    mkdir -p "$(dirname "$SRC_DIR")"
+    git clone --quiet "$REPO_URL" "$SRC_DIR"
+  fi
+else
+  SRC_DIR="$TMP_DIR"
+  echo "Cloning AIAgents source..."
+  git clone --quiet --depth 1 "$REPO_URL" "$SRC_DIR"
+fi
 
 # ── bootstrap ─────────────────────────────────────────────────────────────────
 echo "Running bootstrap..."
-bash "$TMP_DIR/.AIAgents/scripts/bootstrap-commands.sh" \
+bash "$SRC_DIR/.AIAgents/scripts/bootstrap-commands.sh" \
   --repo "$TARGET" \
   --agent "$AGENT" \
   --mode "$MODE"
@@ -69,6 +86,9 @@ rm -rf "$TMP_DIR"
 # ── done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo "Done. AIAgents installed in: $TARGET"
+if [[ "$MODE" == "link" ]]; then
+  echo "Linked files point to $SRC_DIR. Update them with: git -C \"$SRC_DIR\" pull"
+fi
 echo ""
 echo "Next steps:"
 echo "  1. Open $TARGET in your AI agent"

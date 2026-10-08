@@ -28,7 +28,7 @@ MODE="copy"
 START_MARK="<!-- .AIAgents Autoload Start -->"
 END_MARK="<!-- .AIAgents Autoload End -->"
 MANAGED_MARKER="managed-by: aiagents"
-LEGACY_SKILLS=" architecture-review backend coding-standard data devops fix frontend harness implement mkskill plan requirements-breakdown scan spec-review spec status switch tasks testing "
+LEGACY_CHECKSUMS="$SCRIPT_DIR/legacy-skill-checksums.txt"
 LINK_WARNED=0
 
 while [[ $# -gt 0 ]]; do
@@ -91,6 +91,8 @@ link_or_copy() {
   local dest="$2"
 
   if [[ "$MODE" == "copy" ]]; then
+    # A link left by an earlier --mode link install would make cp fail with "are the same file".
+    [[ -L "$dest" ]] && rm -f "$dest"
     cp "$src" "$dest"
     return 0
   fi
@@ -121,23 +123,31 @@ install_files() {
   done
 }
 
-# A skill may be overwritten when absent, marked as framework-managed, or shipped before the marker existed.
-can_write_skill() {
-  local dest="$1"
-  local name="$2"
+has_managed_marker() {
+  awk 'NR == 1 { if ($0 !~ /^---\r?$/) exit; next } /^---\r?$/ { exit } { print }' "$1" | grep -qF "$MANAGED_MARKER"
+}
 
-  [[ -f "$dest/SKILL.md" ]] || return 0
-  grep -qF "$MANAGED_MARKER" "$dest/SKILL.md" && return 0
-  [[ "$LEGACY_SKILLS" == *" $name "* ]]
+# True when the file matches a SKILL.md version shipped before the marker existed.
+is_legacy_framework_skill() {
+  local sum
+  sum="$(tr -d '\r' < "$1" | cksum | awk '{print $1 "-" $2}')"
+  grep -q "^$sum " "$LEGACY_CHECKSUMS"
+}
+
+# A skill may be overwritten when absent, marked as framework-managed, or identical to a pre-marker framework version.
+can_write_skill() {
+  local skill_file="$1/SKILL.md"
+
+  [[ -f "$skill_file" ]] || return 0
+  has_managed_marker "$skill_file" && return 0
+  is_legacy_framework_skill "$skill_file"
 }
 
 install_skill_dir() {
   local src="$1"
   local dest="$2"
-  local name
-  name="$(basename "$src")"
 
-  if ! can_write_skill "$dest" "$name"; then
+  if ! can_write_skill "$dest"; then
     echo "WARNING: skipped $dest (project-authored skill, not framework-managed)" >&2
     return 0
   fi
@@ -152,17 +162,23 @@ install_skill_dir() {
   echo "Installed skill: $dest/SKILL.md"
 }
 
+shared_skill_names() {
+  local skill_dir
+  for skill_dir in "$MODULE_ROOT/_shared/skills"/*/; do
+    [[ -f "${skill_dir}SKILL.md" ]] && basename "$skill_dir"
+  done
+  return 0
+}
+
 # Shared skills install into every agent; a same-named skill in the agent's own folder takes precedence.
 install_shared_skills() {
   local agent_skills_dir="$1"
   local dest_skills_dir="$2"
 
-  local skill_dir name
-  for skill_dir in "$MODULE_ROOT/_shared/skills"/*/; do
-    [[ -f "${skill_dir}SKILL.md" ]] || continue
-    name="$(basename "$skill_dir")"
+  local name
+  for name in $(shared_skill_names); do
     [[ -d "$agent_skills_dir/$name" ]] && continue
-    install_skill_dir "${skill_dir%/}" "$dest_skills_dir/$name"
+    install_skill_dir "$MODULE_ROOT/_shared/skills/$name" "$dest_skills_dir/$name"
   done
 }
 
@@ -280,14 +296,14 @@ domain_skill_lines() {
 }
 
 # Prints a heading plus one line per installed shared (stack) skill; prints nothing when there are none.
+# A same-named project-authored skill that bootstrap skipped is not listed.
 stack_skill_section() {
   local skills_path="$1"
-  local lines="" skill_dir name
+  local lines="" name file
 
-  for skill_dir in "$MODULE_ROOT/_shared/skills"/*/; do
-    [[ -f "${skill_dir}SKILL.md" ]] || continue
-    name="$(basename "$skill_dir")"
-    [[ -f "$REPO_PATH/$skills_path/$name/SKILL.md" ]] && lines+="- $skills_path/$name/SKILL.md"$'\n'
+  for name in $(shared_skill_names); do
+    file="$REPO_PATH/$skills_path/$name/SKILL.md"
+    [[ -f "$file" ]] && has_managed_marker "$file" && lines+="- $skills_path/$name/SKILL.md"$'\n'
   done
 
   [[ -n "$lines" ]] || return 0

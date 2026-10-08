@@ -40,7 +40,7 @@ specific to this project's actual stack, not generic advice.
    - **Constraints**: pulled from engineering standards + domain context
    - **Example**: one real or realistic input/output pair from this codebase
 6. Save to `.claude/skills/<name>/SKILL.md`.
-7. If the new skill domain is not already listed in `CLAUDE.md`, add it to the skills block.
+7. List the new skill in a `Project skills` section of `CLAUDE.md`, outside the `.AIAgents Autoload` markers (bootstrap regenerates everything between them). Do not add `managed-by: aiagents` to its frontmatter: that marker lets bootstrap overwrite the file.
 
 ## Output
 
@@ -54,4 +54,4 @@ specific to this project's actual stack, not generic advice.
 - If `[context.<domain>]` is empty or `NEEDS CLARIFICATION`, run `scan` first and ask
 - Keep the skill under ~400 words — remove anything a competent engineer already knows
 - One skill per concern — do not merge multiple domains into one file
-- Custom skills (outside the 5 standard domains) are valid — name them clearly
+- Custom skills (outside the 6 standard domains) are valid — name them clearly

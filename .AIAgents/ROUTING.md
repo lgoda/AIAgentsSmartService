@@ -84,7 +84,7 @@ The `.AIAgents/` folder stays **only in this source repo** — it is not copied 
 Notes:
 - Codex does not scan `.codex/skills`; it finds skills through the path list in `AGENTS.md`. Moving to `.agents/skills` would also expose them to Gemini and Copilot under the same names, so it is a separate decision.
 - With `--agent all`, Copilot sees both `.github/skills` and `.claude/skills`; same-named skills appear twice.
-- Re-bootstrap overwrites only framework-managed skills (frontmatter `managed-by: aiagents`). A project-authored skill with the same name is skipped with a warning.
+- Re-bootstrap overwrites only framework-managed skills: those with `managed-by: aiagents` in their frontmatter, or identical to a version shipped before the marker existed (`scripts/legacy-skill-checksums.txt`). Any other skill with the same name is project-authored: it is skipped with a warning and not listed under "Stack skills".
 
 ## Shared stack skills
 
