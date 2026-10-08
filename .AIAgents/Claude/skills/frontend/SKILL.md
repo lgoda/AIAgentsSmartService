@@ -1,6 +1,8 @@
 ---
 name: frontend
 description: Handle frontend implementation tasks — components, pages, state management, routing, and API integration. Loads only [context.frontend] from project-context.md.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: frontend
@@ -32,6 +34,7 @@ Before starting, read only:
 2. The specific component(s) or page(s) involved
 
 Do NOT load backend service logic, migrations, or devops sections unless explicitly required.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 

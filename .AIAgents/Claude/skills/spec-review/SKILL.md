@@ -1,6 +1,8 @@
 ---
 name: spec-review
 description: Validate that the current implementation satisfies the spec's acceptance criteria. Green/amber/red per criterion. Reads .ai/current automatically.
+metadata:
+  managed-by: aiagents
 ---
 
 # Spec Review

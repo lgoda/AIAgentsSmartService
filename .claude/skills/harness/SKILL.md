@@ -1,6 +1,8 @@
 ---
 name: harness
 description: Set up the Claude Code harness for this project — hooks, domain-scoped permissions, and audit logging in .claude/settings.json.
+metadata:
+  managed-by: aiagents
 ---
 
 # Harness

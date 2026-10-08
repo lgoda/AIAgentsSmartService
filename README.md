@@ -19,20 +19,20 @@ loading only the context relevant to each task.
 Run this from inside **any project** you want to set up:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh)
 ```
 
 With options:
 
 ```bash
 # Only Claude
-bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/install.sh) --agent claude
+bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh) --agent claude
 
 # Specific target folder
-bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/install.sh) --target /path/to/project
+bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh) --target /path/to/project
 
 # All agents, symlink mode (updates automatically when this repo changes)
-bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/install.sh) --agent all --mode link
+bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh) --agent all --mode link
 ```
 
 After install, open the project in your agent and run `/scan` to get started.
@@ -61,10 +61,10 @@ Every task loads:        Backend task loads:
 
 ## How it works
 
-### 1. One context file, five domain sections
+### 1. One context file, six domain sections
 
 After running `/scan`, the file `.ai/project-context.md` contains a global summary and
-five independently loadable domain sections:
+six independently loadable domain sections:
 
 ```
 .ai/project-context.md
@@ -73,7 +73,8 @@ five independently loadable domain sections:
 ├── [context.frontend]   ← loaded by frontend skill only
 ├── [context.data]       ← loaded by data skill only
 ├── [context.testing]    ← loaded by testing skill only
-└── [context.devops]     ← loaded by devops skill only
+├── [context.devops]     ← loaded by devops skill only
+└── [context.automation] ← loaded by automation skill only (live platforms; the only place for client-specific facts)
 ```
 
 ### 2. Active spec pointer — .ai/current
@@ -106,7 +107,7 @@ specs/
 
 Use `/switch` to change the active spec. Use `/status` to see where you are in the pipeline.
 
-### 3. Domain skills — available for all 3 agents
+### 3. Domain skills and stack skills — available for all agents
 
 Each skill tells the agent exactly what to load and what to ignore.
 Skills are tuned per agent: Claude for broad implementation, Codex for focused code
@@ -119,8 +120,22 @@ generation, Gemini for analysis and design.
 | `data` | DB, migrations, models | implement | implement | analyze / review |
 | `testing` | Tests, coverage, CI | implement | implement | strategy / gaps |
 | `devops` | CI/CD, infra, secrets | implement | implement | analyze / review |
+| `automation` | Live platforms: workflows, voice/chat agents, CRM | execute | execute | review |
 
 Create project-specific skills at any time with `/skill <name> <domain>`.
+
+**Stack skills** are technology knowledge shared by every agent (one source in `.AIAgents/_shared/skills/`, each with on-demand `references/`).
+They load in addition to the domain skill when `Stack skills` in `.ai/project-context.md` lists them:
+
+| Skill | Covers |
+|---|---|
+| `integrations` | Webhooks and APIs: auth, idempotency, queues, timeouts, timezone, phone formats |
+| `n8n` | Operating and editing n8n workflows safely |
+| `voice-agents` | Phone AI agents: routing, flows, post-call, SIP trunks |
+| `messaging` | WhatsApp and chat channels, templates, chat widgets |
+| `crm` | CRM as system of record (GoHighLevel reference) |
+| `conversational-agents` | Designing, evaluating and changing LLM agents |
+| `mcp-servers` | Building safe MCP servers |
 
 ### 4. Commands — the full pipeline
 
@@ -259,7 +274,7 @@ Shared files: `.ai/project-context.md`, `.ai/current`, `specs/`.
 ### Option 1 — Install via curl (recommended)
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh)
 ```
 
 ### Option 2 — Bootstrap manually (if you cloned this repo)
@@ -271,9 +286,10 @@ bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/inst
 ### Options
 
 ```
---agent AGENT   claude | codex | gemini | all  (default: all)
+--agent AGENT   claude | codex | gemini | copilot | all  (default: all)
 --mode  MODE    copy | link                    (default: copy)
 --target PATH   target project path            (install.sh only)
+--source URL    git repo to install from           (install.sh only; default: this repo)
 --repo  PATH    target project path            (bootstrap-commands.sh only)
 ```
 
@@ -286,15 +302,19 @@ bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/inst
 ├── .claude/
 │   ├── commands/    ← scan spec plan tasks implement review fix skill
 │   │                  status switch harness
-│   └── skills/      ← backend  frontend  data  testing  devops
+│   └── skills/      ← backend frontend data testing devops automation + stack skills
 ├── .codex/
 │   ├── commands/    ← scan spec plan tasks implement review fix skill
 │   │                  status switch
-│   └── skills/      ← backend  frontend  data  testing  devops
+│   └── skills/      ← backend frontend data testing devops automation + stack skills
 ├── .gemini/
 │   ├── commands/    ← scan spec plan tasks implement review fix skill
 │   │                  status switch
-│   └── skills/      ← backend  frontend  data  testing  devops
+│   └── skills/      ← backend frontend data testing devops automation + stack skills
+├── .copilot/commands/   ← prompt templates (paste into Copilot Chat)
+├── .github/
+│   ├── skills/          ← same skills (Copilot Agent Mode)
+│   └── copilot-instructions.md
 ├── .ai/
 │   └── project-context.md
 ├── specs/
@@ -331,6 +351,8 @@ Switch to another spec: `/switch`
 ├── COMMANDS.md
 ├── ROUTING.md
 ├── _shared/
+│   ├── skills/            ← stack skills: integrations n8n voice-agents messaging crm
+│   │                        conversational-agents mcp-servers (each with references/)
 │   └── templates/
 │       ├── project-context-template.md
 │       ├── command-template.md
@@ -383,7 +405,9 @@ Switch to another spec: `/switch`
 │       └── devops/SKILL.md
 │
 └── scripts/
-    └── bootstrap-commands.sh
+    ├── bootstrap-commands.sh
+    ├── smoke-bootstrap.sh   ← installer checks
+    └── lint-skills.sh       ← skill content checks
 ```
 
 ---

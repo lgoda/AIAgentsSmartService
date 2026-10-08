@@ -71,3 +71,26 @@ The `.AIAgents/` folder stays **only in this source repo** — it is not copied 
 - `project-context.md` lives in `.ai/` — neutral folder shared by all agents.
 - Skills are loaded manually per task — agents do not auto-load all skills.
 - Re-run bootstrap after adding new skills to propagate them to target projects.
+
+## Skill discovery per agent (verified 2026-10-08)
+
+| Agent | Native project skill paths | Installed by bootstrap to |
+|---|---|---|
+| Claude Code | `.claude/skills` | `.claude/skills` |
+| Codex | `.agents/skills` only (not `.codex/skills`) | `.codex/skills`, listed explicitly in `AGENTS.md` |
+| Gemini CLI | `.gemini/skills`, `.agents/skills` | `.gemini/skills` |
+| Copilot | `.github/skills`, `.claude/skills`, `.agents/skills` | `.github/skills` |
+
+Notes:
+- Codex does not scan `.codex/skills`; it finds skills through the path list in `AGENTS.md`. Moving to `.agents/skills` would also expose them to Gemini and Copilot under the same names, so it is a separate decision.
+- With `--agent all`, Copilot sees both `.github/skills` and `.claude/skills`; same-named skills appear twice.
+- Re-bootstrap overwrites only framework-managed skills (frontmatter `managed-by: aiagents`). A project-authored skill with the same name is skipped with a warning.
+
+## Shared stack skills
+
+`.AIAgents/_shared/skills/<name>/` (with optional `references/`) is installed into every selected agent. A same-named folder in `.AIAgents/<Agent>/skills/` overrides it for that agent.
+The startup files list them under "Stack skills"; `scan` records the ones that apply in `.ai/project-context.md`.
+
+## Install source
+
+`install.sh` clones this fork by default. Use `--source <git-url>` to install from another repository (for example the upstream project).

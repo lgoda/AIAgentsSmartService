@@ -2,13 +2,14 @@
 
 # AIAgents installer
 # Usage:
-#   bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/install.sh)
-#   bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/install.sh) --agent claude
-#   bash <(curl -fsSL https://raw.githubusercontent.com/DiegoBoni/AIAgents/main/install.sh) --agent all --mode link
+#   bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh) --agent claude
+#   bash <(curl -fsSL https://raw.githubusercontent.com/lgoda/AIAgentsSmartService/main/install.sh) --agent all --mode link
+#   bash <(curl -fsSL ...install.sh) --source https://github.com/DiegoBoni/AIAgents.git   # install upstream instead
 
 set -euo pipefail
 
-REPO_URL="https://github.com/DiegoBoni/AIAgents.git"
+REPO_URL="https://github.com/lgoda/AIAgentsSmartService.git"
 TMP_DIR="$(mktemp -d)"
 TARGET="$(pwd)"
 AGENT="all"
@@ -20,8 +21,9 @@ while [[ $# -gt 0 ]]; do
     --agent) AGENT="$2"; shift 2 ;;
     --mode)  MODE="$2";  shift 2 ;;
     --target) TARGET="$2"; shift 2 ;;
+    --source) REPO_URL="$2"; shift 2 ;;
     -h|--help)
-      echo "Usage: install.sh [--agent claude|codex|gemini|all] [--mode copy|link] [--target PATH]"
+      echo "Usage: install.sh [--agent claude|codex|gemini|copilot|all] [--mode copy|link] [--target PATH] [--source GIT_URL]"
       exit 0
       ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
@@ -29,8 +31,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ── validate ──────────────────────────────────────────────────────────────────
-case "$AGENT" in codex|gemini|claude|all) ;; *)
-  echo "Invalid --agent: $AGENT  (use: claude | codex | gemini | all)" >&2; exit 1 ;;
+case "$AGENT" in codex|gemini|claude|copilot|all) ;; *)
+  echo "Invalid --agent: $AGENT  (use: claude | codex | gemini | copilot | all)" >&2; exit 1 ;;
 esac
 
 case "$MODE" in copy|link) ;; *)
@@ -48,6 +50,7 @@ echo "  ──────────────────"
 echo "  Target : $TARGET"
 echo "  Agent  : $AGENT"
 echo "  Mode   : $MODE"
+echo "  Source : $REPO_URL"
 echo ""
 
 echo "Cloning AIAgents source..."

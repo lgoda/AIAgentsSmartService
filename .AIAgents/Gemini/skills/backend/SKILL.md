@@ -1,6 +1,8 @@
 ---
 name: backend
 description: Analyze and review backend API contracts, service architecture, auth flows, and integration patterns — focused on correctness, tradeoffs, and risks before implementation.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: backend
@@ -32,6 +34,7 @@ Before starting, read only:
 2. The specific file(s) or spec relevant to the analysis
 
 Do NOT load frontend, data migration, or devops sections unless explicitly required.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 

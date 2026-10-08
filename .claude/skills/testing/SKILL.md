@@ -1,6 +1,8 @@
 ---
 name: testing
 description: Handle testing tasks — unit tests, integration tests, E2E tests, coverage checks, and CI gate validation. Loads only [context.testing] from project-context.md.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: testing
@@ -33,6 +35,7 @@ Before starting, read only:
 3. Existing test file(s) for that unit if they exist
 
 Do NOT load unrelated backend services, frontend components, or devops config unless required.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 

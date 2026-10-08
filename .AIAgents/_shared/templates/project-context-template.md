@@ -13,6 +13,7 @@
 - Frameworks:
 - Runtime:
 - Package managers:
+- Stack skills: <installed stack skills matching this project's technologies, or "none">
 
 ## Architecture
 
@@ -92,3 +93,14 @@
 - Secrets management:
 - Monitoring / alerting:
 - Rollback procedure:
+
+## [context.automation]
+
+- Platforms in use + system of record:
+- Accounts / instances -> MCP server names (one per account; never substitute another):
+- Environments and test-resource policy (designated test numbers, sandbox accounts):
+- Publish policy (agent | human):
+- Timezone / locale / phone country:
+- Change-record locations (decisions, issues, changelog):
+- Docs routing (task -> file to read):
+- Known platform constraints:

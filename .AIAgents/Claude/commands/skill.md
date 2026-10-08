@@ -1,6 +1,6 @@
 ---
 description: Create or update a domain skill tailored to the current project's stack, conventions, and patterns.
-arguments: Skill name and optionally domain (backend|frontend|data|testing|devops|custom). Example: "payments backend" or "shadcn-ui frontend"
+arguments: Skill name and optionally domain (backend|frontend|data|testing|devops|automation|custom). Example: "payments backend" or "shadcn-ui frontend"
 output: .claude/skills/<name>/SKILL.md
 ---
 

@@ -1,6 +1,8 @@
 ---
 name: status
 description: Show the current pipeline state — active spec, stage, task progress, and quality gates. Read-only diagnostic, no files written.
+metadata:
+  managed-by: aiagents
 ---
 
 # Status

@@ -1,6 +1,8 @@
 ---
 name: requirements-breakdown
 description: Break down broad product requests into prioritized functional and non-functional requirements.
+metadata:
+  managed-by: aiagents
 ---
 
 # Requirements Breakdown

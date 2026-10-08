@@ -1,13 +1,15 @@
 ---
 name: mkskill
 description: Create or update a domain skill tailored to the current project's stack, conventions, and patterns. Saves to .claude/skills/<name>/SKILL.md.
+metadata:
+  managed-by: aiagents
 ---
 
 # Make Skill
 
 ## Arguments
 
-Skill name and optionally domain (`backend|frontend|data|testing|devops|custom`). Example: `payments backend` or `shadcn-ui frontend`.
+Skill name and optionally domain (`backend|frontend|data|testing|devops|automation|custom`). Example: `payments backend` or `shadcn-ui frontend`.
 
 ## Output
 
