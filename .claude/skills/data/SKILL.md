@@ -1,6 +1,8 @@
 ---
 name: data
 description: Handle data layer tasks — database models, migrations, ORM queries, caching, and validation. Loads only [context.data] from project-context.md.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: data
@@ -33,6 +35,7 @@ Before starting, read only:
 2. The specific migration file(s), model(s), or query file(s) involved
 
 Do NOT load frontend components, backend service logic, or devops sections unless explicitly required.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 

@@ -13,8 +13,8 @@ $ARGUMENTS
 ## Steps
 
 1. Parse `--trace` flag. If present, create `specs/bugs/<slug>/spec.md` and update `.ai/current`.
-2. Determine domain from file path or description.
-3. Read only `[context.<domain>]` from `.ai/project-context.md`.
+2. Determine domain from file path or description. Live platform configuration (workflows, agents, CRM, messaging) maps to `automation`.
+3. Read only `[context.<domain>]` from `.ai/project-context.md`. If the affected code uses a technology listed under `Stack skills`, also load that stack skill.
 4. Read the affected file(s) — no more.
 5. Identify root cause. Apply minimal fix. Run lint and relevant tests.
 6. Return: root cause, fix summary, test result, cross-domain flags.

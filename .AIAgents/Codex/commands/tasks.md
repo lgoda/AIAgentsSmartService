@@ -15,7 +15,7 @@ $ARGUMENTS
 1. Resolve spec directory: use arguments if given, otherwise read `.ai/current`.
    - If `.ai/current` is missing → stop, ask user to run `/spec` first.
    - Read `plan.md` from the directory. If missing → ask user to run `/plan` first.
-2. Convert phases into independently testable tasks with domain, dependencies, and validation.
+2. Convert phases into independently testable tasks with domain (backend, frontend, data, testing, devops, automation), dependencies, and validation. Add an optional `Skills:` line naming the stack skills the task needs.
 3. Add priority and parallel flag per task.
 4. Save `tasks.md` in the same directory.
 5. Return ordered execution list grouped by domain.
@@ -25,3 +25,4 @@ $ARGUMENTS
 - Resolve from `.ai/current` when no args given.
 - One domain per task — never mix.
 - Validation must be concrete and verifiable.
+- Live platform work (workflows, agents, CRM, messaging) is `automation`, never mixed with code domains.

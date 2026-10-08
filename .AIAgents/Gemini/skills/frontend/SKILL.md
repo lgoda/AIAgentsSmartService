@@ -1,6 +1,8 @@
 ---
 name: frontend
 description: Analyze and review frontend component design, state management patterns, and UI-to-API contracts — focused on design correctness and risks before implementation.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: frontend
@@ -32,6 +34,7 @@ Before starting, read only:
 2. The specific component(s), page(s), or spec relevant to the analysis
 
 Do NOT load backend service logic, migrations, or devops sections.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 

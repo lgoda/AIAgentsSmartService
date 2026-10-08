@@ -1,6 +1,8 @@
 ---
 name: implement
 description: Execute implementation tasks from a feature's task list, domain-by-domain, with progress tracking and optional sub-agent parallelism.
+metadata:
+  managed-by: aiagents
 ---
 
 # Implement
@@ -24,7 +26,7 @@ Implemented code changes + progress report.
 ## Steps
 
 1. Resolve spec directory as above.
-2. Read `tasks.md` and group tasks by domain: `backend`, `frontend`, `data`, `testing`, `devops`.
+2. Read `tasks.md` and group tasks by domain: `backend`, `frontend`, `data`, `testing`, `devops`, `automation`.
 3. Register all tasks in TodoWrite (status: pending) before starting any work.
 4. Determine execution order from dependency graph:
    - Tasks with no dependencies and different domains → candidate for parallel sub-agents.
@@ -32,6 +34,7 @@ Implemented code changes + progress report.
 5. For each task (or domain batch):
    a. Mark task as `in_progress` in TodoWrite.
    b. Load `.claude/skills/<domain>/SKILL.md`.
+      - Then load each stack skill named in the task's `Skills:` field (`.claude/skills/<name>/SKILL.md`); open its `references/` only where its index points.
    c. Read only `[context.<domain>]` from `.ai/project-context.md`.
    d. Implement the minimum change that satisfies the task's validation criteria.
    e. Mark task as `done` in TodoWrite immediately on completion.
@@ -45,6 +48,7 @@ When tasks in different domains have no dependencies between them:
 - Each sub-agent receives:
   - The task list for its domain
   - Path to its domain skill: `.claude/skills/<domain>/SKILL.md`
+  - Paths to the stack skills named in the tasks' `Skills:` field
   - The matching context section: `[context.<domain>]` from `.ai/project-context.md`
   - The spec file for reference: `spec.md` from the resolved directory
 - Collect sub-agent results and merge before reporting.

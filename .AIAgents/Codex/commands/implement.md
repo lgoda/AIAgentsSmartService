@@ -16,8 +16,8 @@ $ARGUMENTS
    - If `.ai/current` is missing → stop, ask user to run `/spec` first.
    - Read `tasks.md`. If missing → ask user to run `/tasks` first.
 2. Read `plan.md` for constraints and quality gates.
-3. Group tasks by domain. For each task in dependency order:
-   a. Load `.codex/skills/<domain>/SKILL.md`.
+3. Group tasks by domain (backend, frontend, data, testing, devops, automation). For each task in dependency order:
+   a. Load `.codex/skills/<domain>/SKILL.md`, then each stack skill named in the task's `Skills:` field (`.codex/skills/<name>/SKILL.md`).
    b. Read only `[context.<domain>]` from `.ai/project-context.md`.
    c. Implement the minimum change satisfying the task's validation criteria.
    d. Log cross-domain impacts — do not resolve them in the same step.

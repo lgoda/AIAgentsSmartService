@@ -27,6 +27,9 @@ AGENT="all"
 MODE="copy"
 START_MARK="<!-- .AIAgents Autoload Start -->"
 END_MARK="<!-- .AIAgents Autoload End -->"
+MANAGED_MARKER="managed-by: aiagents"
+LEGACY_CHECKSUMS="$SCRIPT_DIR/legacy-skill-checksums.txt"
+LINK_WARNED=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -83,6 +86,24 @@ case "$MODE" in
     ;;
 esac
 
+link_or_copy() {
+  local src="$1"
+  local dest="$2"
+
+  if [[ "$MODE" == "copy" ]]; then
+    # A link left by an earlier --mode link install would make cp fail with "are the same file".
+    [[ -L "$dest" ]] && rm -f "$dest"
+    cp "$src" "$dest"
+    return 0
+  fi
+
+  ln -sfn "$src" "$dest" 2> /dev/null || cp "$src" "$dest"
+  if [[ ! -L "$dest" && "$LINK_WARNED" -eq 0 ]]; then
+    echo "WARNING: symlinks are not supported here; files were copied instead of linked." >&2
+    LINK_WARNED=1
+  fi
+}
+
 install_files() {
   local src_dir="$1"
   local dest_dir="$2"
@@ -96,13 +117,68 @@ install_files() {
     base="$(basename "$file")"
     local dest="$dest_dir/$base"
 
-    if [[ "$MODE" == "copy" ]]; then
-      cp "$file" "$dest"
-    else
-      ln -sfn "$file" "$dest"
-    fi
+    link_or_copy "$file" "$dest"
 
     echo "Installed: $dest"
+  done
+}
+
+has_managed_marker() {
+  awk 'NR == 1 { if ($0 !~ /^---\r?$/) exit; next } /^---\r?$/ { exit } { print }' "$1" | grep -qF "$MANAGED_MARKER"
+}
+
+# True when the file matches a SKILL.md version shipped before the marker existed.
+is_legacy_framework_skill() {
+  local sum
+  sum="$(tr -d '\r' < "$1" | cksum | awk '{print $1 "-" $2}')"
+  grep -q "^$sum " "$LEGACY_CHECKSUMS"
+}
+
+# A skill may be overwritten when absent, marked as framework-managed, or identical to a pre-marker framework version.
+can_write_skill() {
+  local skill_file="$1/SKILL.md"
+
+  [[ -f "$skill_file" ]] || return 0
+  has_managed_marker "$skill_file" && return 0
+  is_legacy_framework_skill "$skill_file"
+}
+
+install_skill_dir() {
+  local src="$1"
+  local dest="$2"
+
+  if ! can_write_skill "$dest"; then
+    echo "WARNING: skipped $dest (project-authored skill, not framework-managed)" >&2
+    return 0
+  fi
+
+  local file rel
+  while IFS= read -r -d '' file; do
+    rel="${file#"$src"/}"
+    mkdir -p "$dest/$(dirname "$rel")"
+    link_or_copy "$file" "$dest/$rel"
+  done < <(find "$src" -type f ! -name '.DS_Store' -print0)
+
+  echo "Installed skill: $dest/SKILL.md"
+}
+
+shared_skill_names() {
+  local skill_dir
+  for skill_dir in "$MODULE_ROOT/_shared/skills"/*/; do
+    [[ -f "${skill_dir}SKILL.md" ]] && basename "$skill_dir"
+  done
+  return 0
+}
+
+# Shared skills install into every agent; a same-named skill in the agent's own folder takes precedence.
+install_shared_skills() {
+  local agent_skills_dir="$1"
+  local dest_skills_dir="$2"
+
+  local name
+  for name in $(shared_skill_names); do
+    [[ -d "$agent_skills_dir/$name" ]] && continue
+    install_skill_dir "$MODULE_ROOT/_shared/skills/$name" "$dest_skills_dir/$name"
   done
 }
 
@@ -110,28 +186,15 @@ install_skills() {
   local src_skills_dir="$1"
   local dest_skills_dir="$2"
 
-  [[ -d "$src_skills_dir" ]] || return 0
-
   local skill_dir
-  for skill_dir in "$src_skills_dir"/*/; do
-    [[ -d "$skill_dir" ]] || continue
-    local skill_name
-    skill_name="$(basename "$skill_dir")"
-    local dest="$dest_skills_dir/$skill_name"
-    local skill_file="$skill_dir/SKILL.md"
+  if [[ -d "$src_skills_dir" ]]; then
+    for skill_dir in "$src_skills_dir"/*/; do
+      [[ -f "${skill_dir}SKILL.md" ]] || continue
+      install_skill_dir "${skill_dir%/}" "$dest_skills_dir/$(basename "$skill_dir")"
+    done
+  fi
 
-    [[ -f "$skill_file" ]] || continue
-
-    mkdir -p "$dest"
-
-    if [[ "$MODE" == "copy" ]]; then
-      cp "$skill_file" "$dest/SKILL.md"
-    else
-      ln -sfn "$skill_file" "$dest/SKILL.md"
-    fi
-
-    echo "Installed skill: $dest/SKILL.md"
-  done
+  install_shared_skills "$src_skills_dir" "$dest_skills_dir"
 }
 
 ensure_project_context() {
@@ -176,7 +239,7 @@ ensure_autoload_block() {
   tmp="$(mktemp)"
 
   if grep -qF "$START_MARK" "$file"; then
-    awk -v start="$START_MARK" -v end="$END_MARK" -v block_file="$block_file" '
+    awk -v BINMODE=3 -v start="$START_MARK" -v end="$END_MARK" -v block_file="$block_file" '
       BEGIN {
         in_block = 0
         replaced = 0
@@ -185,13 +248,14 @@ ensure_autoload_block() {
         }
         close(block_file)
       }
-      $0 == start {
+      { line_no_cr = $0; sub(/\r$/, "", line_no_cr) }
+      line_no_cr == start {
         printf "%s", block
         in_block = 1
         replaced = 1
         next
       }
-      $0 == end {
+      line_no_cr == end {
         in_block = 0
         next
       }
@@ -222,11 +286,40 @@ write_guidance_block() {
   rm -f "$block_file"
 }
 
-skill_lines() {
+domain_skill_lines() {
   local skills_path="$1"
-  for skill in backend frontend data testing devops; do
-    echo "- $skills_path/$skill/SKILL.md"
+  local skill
+  for skill in backend frontend data testing devops automation; do
+    [[ -f "$REPO_PATH/$skills_path/$skill/SKILL.md" ]] && echo "- $skills_path/$skill/SKILL.md"
   done
+  return 0
+}
+
+# Prints a heading plus one line per installed shared (stack) skill; prints nothing when there are none.
+# A same-named project-authored skill that bootstrap skipped is not listed.
+stack_skill_section() {
+  local skills_path="$1"
+  local lines="" name file
+
+  for name in $(shared_skill_names); do
+    file="$REPO_PATH/$skills_path/$name/SKILL.md"
+    [[ -f "$file" ]] && has_managed_marker "$file" && lines+="- $skills_path/$name/SKILL.md"$'\n'
+  done
+
+  [[ -n "$lines" ]] || return 0
+  printf '\n\nStack skills — load in addition to the domain skill when the task touches that technology (see "Stack skills" in .ai/project-context.md):\n%s' "$lines"
+}
+
+safety_block() {
+  cat <<'SAFETY'
+Live platform safety (applies to every task, with or without a skill loaded):
+- Treat live platforms (workflows, voice agents, CRM, messaging, databases) as production.
+- Confirm the target account or instance before any write. Never fall back to another account's tools.
+- Read before write. Verify the effect afterwards, not just the API response.
+- Never message, call or notify real people without explicit confirmation.
+- Never copy secrets into files, logs or messages.
+- Record every live change where [context.automation] says to.
+SAFETY
 }
 
 install_codex() {
@@ -243,12 +336,14 @@ $START_MARK
 Load command files from .codex/commands/*.md
 
 Domain skills available (load only the skill for your current task):
-$(skill_lines ".codex/skills")
+$(domain_skill_lines ".codex/skills")$(stack_skill_section ".codex/skills")
+
+$(safety_block)
 
 Startup behavior (required):
 1. Run \`/scan\` first to create/update \`.ai/project-context.md\`.
 2. If \`project-context.md\` already exists, refresh it when stack, architecture, integrations, or standards change.
-3. Before any task, load only the skill matching your domain (backend, frontend, data, testing, devops).
+3. Before any task, load only the skill matching your domain (backend, frontend, data, testing, devops, automation).
 4. Each skill specifies exactly which section of \`project-context.md\` to read — load only that section.
 5. If critical info is missing, mark \`NEEDS CLARIFICATION\` and continue with safe defaults.
 
@@ -293,12 +388,14 @@ $START_MARK
 Load command files from .gemini/commands/*.md
 
 Domain skills available (load only the skill for your current task):
-$(skill_lines ".gemini/skills")
+$(domain_skill_lines ".gemini/skills")$(stack_skill_section ".gemini/skills")
+
+$(safety_block)
 
 Startup behavior (required):
 1. Run \`/scan\` first to create/update \`.ai/project-context.md\`.
 2. If \`project-context.md\` already exists, refresh it when stack, architecture, integrations, or standards change.
-3. Before any task, load only the skill matching your domain (backend, frontend, data, testing, devops).
+3. Before any task, load only the skill matching your domain (backend, frontend, data, testing, devops, automation).
 4. Each skill specifies exactly which section of \`project-context.md\` to read — load only that section.
 5. If critical info is missing, mark \`NEEDS CLARIFICATION\` and continue with safe defaults.
 
@@ -361,12 +458,14 @@ Workflow skills — invoke by name to execute a pipeline step:
 - harness      → configure Claude Code hooks and permissions
 
 Domain skills — load only the skill matching your current task:
-$(skill_lines ".claude/skills")
+$(domain_skill_lines ".claude/skills")$(stack_skill_section ".claude/skills")
+
+$(safety_block)
 
 Startup behavior (required):
 1. Invoke the \`scan\` skill first to create/update \`.ai/project-context.md\`.
 2. If \`project-context.md\` already exists, refresh it when stack, architecture, integrations, or standards change.
-3. Before any task, load only the domain skill matching your work (backend, frontend, data, testing, devops).
+3. Before any task, load only the domain skill matching your work (backend, frontend, data, testing, devops, automation).
 4. Each domain skill specifies exactly which section of \`project-context.md\` to read — load only that section.
 5. If critical info is missing, mark \`NEEDS CLARIFICATION\` and continue with safe defaults.
 
@@ -411,11 +510,9 @@ This project uses a shared multi-agent workflow. All agents read from the same s
 Skills are in \`.github/skills/\` — Copilot Agent Mode discovers and activates them automatically
 when your prompt is relevant to a domain. No manual loading needed.
 
-- \`.github/skills/backend/SKILL.md\`
-- \`.github/skills/frontend/SKILL.md\`
-- \`.github/skills/data/SKILL.md\`
-- \`.github/skills/testing/SKILL.md\`
-- \`.github/skills/devops/SKILL.md\`
+$(domain_skill_lines ".github/skills")$(stack_skill_section ".github/skills")
+
+$(safety_block)
 
 ## Workflow commands (prompt templates)
 

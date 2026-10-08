@@ -1,6 +1,8 @@
 ---
 name: architecture-review
 description: Evaluate architecture decisions for scalability, reliability, security, and maintainability before implementation.
+metadata:
+  managed-by: aiagents
 ---
 
 # Architecture Review

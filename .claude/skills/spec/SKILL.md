@@ -1,6 +1,8 @@
 ---
 name: spec
 description: Draft a complete feature specification with acceptance scenarios, designed for cross-agent handoff. Creates specs/features/<slug>/spec.md and sets .ai/current.
+metadata:
+  managed-by: aiagents
 ---
 
 # Spec

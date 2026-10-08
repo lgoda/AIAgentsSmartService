@@ -1,6 +1,8 @@
 ---
 name: testing
 description: Analyze test coverage gaps, review test strategy, and identify edge cases and behavioral drift between spec and implementation.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: testing
@@ -32,6 +34,7 @@ Before starting, read only:
 2. The source file(s) and existing test file(s) relevant to the analysis
 
 Do NOT load unrelated services, frontend components, or devops config.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 

@@ -11,7 +11,9 @@ This module provides reusable command specs by agent.
 - `.AIAgents/Gemini/commands/`   ← installed to `.gemini/commands/`
 - `.AIAgents/Gemini/skills/`     ← installed to `.gemini/skills/`
 - `.AIAgents/_shared/templates/`
+- `.AIAgents/_shared/skills/`      ← stack skills (one source), installed to every agent's skills dir
 - `.AIAgents/scripts/bootstrap-commands.sh`
+- `.AIAgents/scripts/smoke-bootstrap.sh`, `lint-skills.sh`  ← maintainer checks (installer behaviour, skill content)
 
 ## Command set
 
@@ -130,3 +132,9 @@ Map each agent runtime to its own folder:
 - Codex: `.codex/commands/*.md` + `.codex/skills/*/SKILL.md`
 - Gemini: `.gemini/commands/*.md` + `.gemini/skills/*/SKILL.md`
 - Claude: `.claude/commands/*.md` + `.claude/skills/*/SKILL.md`
+
+## Domains and stack skills
+
+Tasks have exactly one domain: `backend`, `frontend`, `data`, `testing`, `devops` or `automation` (changes made on live platforms).
+A task may also list `Skills:` (stack skills from `_shared/skills/`) to load in addition to its domain skill.
+Stack skills are chosen by `scan` and recorded as `Stack skills` in `.ai/project-context.md`.

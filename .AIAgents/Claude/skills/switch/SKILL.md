@@ -1,6 +1,8 @@
 ---
 name: switch
 description: Switch the active spec without running spec again. Lists available specs or switches to a named one. Updates .ai/current.
+metadata:
+  managed-by: aiagents
 ---
 
 # Switch

@@ -18,7 +18,8 @@ $ARGUMENTS
 2. Read `spec.md` and `plan.md` for context.
 3. For each task, verify:
    - Acceptance criteria are testable and unambiguous.
-   - Domain assignment is correct.
+   - Domain assignment is correct (one of backend, frontend, data, testing, devops, automation).
+   - Stack skills named in `Skills:` are installed and match the task.
    - Dependencies are declared and ordering is valid.
    - Quality gates are measurable.
 4. Flag tasks that are under-specified or have missing validation.

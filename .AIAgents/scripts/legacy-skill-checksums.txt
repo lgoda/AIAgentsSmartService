@@ -1,0 +1,76 @@
+# Checksums of every SKILL.md version the framework shipped before the managed-by marker existed.
+# bootstrap-commands.sh treats an unmarked installed skill as framework-managed only if its content
+# (carriage returns removed) matches one of these, so project-authored skills are never overwritten.
+# Format: <cksum crc>-<byte count>  <source path at the time>. Generated once from git history:
+#   git rev-list --objects HEAD | grep 'skills/[^/]*/SKILL.md$' | while read b p; do
+#     git cat-file -p "$b" | grep -q 'managed-by: aiagents' || git cat-file -p "$b" | tr -d '\r' | cksum; done
+# Versions shipped after the marker carry it in their frontmatter, so this list never needs updating.
+1011725774-1795  .AIAgents/Gemini/skills/backend/SKILL.md
+1028362128-1862  .AIAgents/Claude/skills/devops/SKILL.md
+1041861234-1640  .AIAgents/Codex/skills/testing/SKILL.md
+1088945541-1579  .AIAgents/Codex/skills/backend/SKILL.md
+1127455449-3321  .AIAgents/Claude/skills/status/SKILL.md
+1136134959-1733  .AIAgents/Claude/skills/backend/SKILL.md
+1249962971-1767  .AIAgents/Codex/skills/data/SKILL.md
+1317800542-1912  .AIAgents/Claude/skills/backend/SKILL.md
+1347417836-1750  .AIAgents/Copilot/skills/backend/SKILL.md
+1433370531-1973  .AIAgents/Claude/skills/data/SKILL.md
+1449902826-2032  .AIAgents/Claude/skills/testing/SKILL.md
+151775580-1835  .AIAgents/Copilot/skills/data/SKILL.md
+1535651560-3470  .AIAgents/Claude/skills/spec/SKILL.md
+1602006337-517  .AIAgents/Codex/skills/coding-standard/SKILL.md
+1610745064-1588  .AIAgents/Codex/skills/frontend/SKILL.md
+1614802035-1846  .AIAgents/Claude/skills/testing/SKILL.md
+1616345095-2988  .AIAgents/Claude/skills/harness/SKILL.md
+1655058085-1819  .AIAgents/Copilot/skills/devops/SKILL.md
+1761754563-1617  .AIAgents/Codex/skills/devops/SKILL.md
+17827492-1490  .AIAgents/Codex/skills/testing/SKILL.md
+1790508754-1804  .AIAgents/Gemini/skills/data/SKILL.md
+1802631865-1970  .AIAgents/Gemini/skills/data/SKILL.md
+1812869510-1637  .AIAgents/Gemini/skills/testing/SKILL.md
+1914081862-2555  .AIAgents/Claude/skills/mkskill/SKILL.md
+1999630642-2033  .AIAgents/Gemini/skills/devops/SKILL.md
+2020345336-1813  .AIAgents/Copilot/skills/frontend/SKILL.md
+204183774-1708  .AIAgents/Copilot/skills/testing/SKILL.md
+2042361227-1738  .AIAgents/Codex/skills/frontend/SKILL.md
+2079833005-1795  .AIAgents/Copilot/skills/backend/SKILL.md
+218642103-2930  .AIAgents/Claude/skills/spec-review/SKILL.md
+2269834573-2685  .AIAgents/Claude/skills/fix/SKILL.md
+2335020037-1792  .AIAgents/Gemini/skills/data/SKILL.md
+2446982531-1794  .AIAgents/Claude/skills/data/SKILL.md
+2693691672-1992  .AIAgents/Gemini/skills/frontend/SKILL.md
+2748339863-1780  .AIAgents/Claude/skills/frontend/SKILL.md
+2749147095-1834  .AIAgents/Claude/skills/testing/SKILL.md
+2770261033-1864  .AIAgents/Gemini/skills/devops/SKILL.md
+2835271810-1791  .AIAgents/Gemini/skills/frontend/SKILL.md
+3155258757-1850  .AIAgents/Claude/skills/devops/SKILL.md
+3220721242-1658  .AIAgents/Copilot/skills/testing/SKILL.md
+3318684073-1751  .AIAgents/Codex/skills/devops/SKILL.md
+332006466-2429  .AIAgents/Claude/skills/switch/SKILL.md
+3359092739-1721  .AIAgents/Claude/skills/backend/SKILL.md
+3364010950-1752  .AIAgents/Codex/skills/backend/SKILL.md
+337798252-1806  .AIAgents/Claude/skills/data/SKILL.md
+3388544016-2727  .AIAgents/Claude/skills/implement/SKILL.md
+3541934090-1755  .AIAgents/Copilot/skills/data/SKILL.md
+3621888341-2004  .AIAgents/Gemini/skills/backend/SKILL.md
+3627509865-1649  .AIAgents/Gemini/skills/testing/SKILL.md
+3640847065-1591  .AIAgents/Codex/skills/backend/SKILL.md
+365725013-1502  .AIAgents/Codex/skills/testing/SKILL.md
+3692503120-1752  .AIAgents/Copilot/skills/frontend/SKILL.md
+3817134241-1966  .AIAgents/Claude/skills/plan/SKILL.md
+3837602354-1772  .AIAgents/Copilot/skills/devops/SKILL.md
+3844868416-552  .AIAgents/Gemini/skills/requirements-breakdown/SKILL.md
+3925811202-1792  .AIAgents/Claude/skills/frontend/SKILL.md
+4068807769-1980  .AIAgents/Claude/skills/frontend/SKILL.md
+4146976246-1801  .AIAgents/Gemini/skills/testing/SKILL.md
+4181528668-1602  .AIAgents/Codex/skills/data/SKILL.md
+4185070250-2052  .AIAgents/Claude/skills/tasks/SKILL.md
+4202641331-1576  .AIAgents/Codex/skills/frontend/SKILL.md
+4247716248-1807  .AIAgents/Gemini/skills/backend/SKILL.md
+4255258038-1803  .AIAgents/Gemini/skills/frontend/SKILL.md
+47848635-1605  .AIAgents/Codex/skills/devops/SKILL.md
+682033275-2553  .AIAgents/Claude/skills/scan/SKILL.md
+745835144-1876  .AIAgents/Gemini/skills/devops/SKILL.md
+852994907-1590  .AIAgents/Codex/skills/data/SKILL.md
+909656504-2051  .AIAgents/Claude/skills/devops/SKILL.md
+962934962-524  .AIAgents/Claude/skills/architecture-review/SKILL.md

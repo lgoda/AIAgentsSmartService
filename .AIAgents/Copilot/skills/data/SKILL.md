@@ -1,6 +1,8 @@
 ---
 name: data
 description: Implement data layer changes — migrations, model updates, query optimization, and caching — with safe, reversible steps and rollback paths. Model-agnostic — works with any Copilot model.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: data
@@ -32,6 +34,7 @@ Before starting, read only:
 2. The specific migration, model, or query file(s) to modify
 
 Do NOT load frontend components, backend service logic, or devops sections.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 

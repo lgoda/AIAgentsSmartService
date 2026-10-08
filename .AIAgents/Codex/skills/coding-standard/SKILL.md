@@ -1,6 +1,8 @@
 ---
 name: coding-standard
 description: Coding workflow for Codex with implementation quality gates, validation, and concise delivery notes.
+metadata:
+  managed-by: aiagents
 ---
 
 # Coding Standard

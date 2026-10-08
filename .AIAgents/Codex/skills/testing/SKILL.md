@@ -1,6 +1,8 @@
 ---
 name: testing
 description: Write and fix unit, integration, and E2E tests with deterministic, isolated test cases and clear coverage intent.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: testing
@@ -33,6 +35,7 @@ Before starting, read only:
 3. Existing test file(s) for those units
 
 Do NOT load unrelated backend services, frontend components, or devops config.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 

@@ -1,6 +1,8 @@
 ---
 name: plan
 description: Create a phased technical plan from an active spec. Reads .ai/current automatically. Outputs specs/<type>/<slug>/plan.md.
+metadata:
+  managed-by: aiagents
 ---
 
 # Plan

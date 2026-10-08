@@ -1,6 +1,8 @@
 ---
 name: devops
 description: Implement CI/CD pipelines, deployment scripts, and infrastructure changes with scoped, environment-safe steps.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: devops
@@ -32,6 +34,7 @@ Before starting, read only:
 2. The specific pipeline or config file(s) to modify
 
 Do NOT load application source code, frontend components, or database migrations.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 

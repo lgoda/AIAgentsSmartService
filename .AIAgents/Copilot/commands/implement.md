@@ -1,6 +1,6 @@
 ---
 description: Execute tasks from the task list, domain by domain.
-arguments: Optional domain filter (backend|frontend|data|testing|devops) or task id.
+arguments: Optional domain filter (backend|frontend|data|testing|devops|automation) or task id.
 output: Code changes + updated task statuses in tasks.md
 usage: Paste this prompt into Copilot Chat. Load the matching domain skill first.
 ---
@@ -12,7 +12,7 @@ Execute the next pending task(s) from the current task list.
 Steps:
 1. Read `.ai/current` to get the spec directory.
 2. Read `tasks.md`. Identify the next todo task(s) — respect depends-on ordering.
-3. Load the domain skill for the task's domain from `.copilot/skills/<domain>/SKILL.md`.
+3. Load the domain skill for the task's domain from `.github/skills/<domain>/SKILL.md`, then each stack skill named in the task's `Skills:` field (`.github/skills/<name>/SKILL.md`).
 4. Read only the matching `[context.<domain>]` section from `.ai/project-context.md`.
 5. Implement the task following the skill workflow.
 6. Mark the task as `done` in `tasks.md`.

@@ -1,6 +1,8 @@
 ---
 name: fix
 description: Fix a bug with minimal context — loads only the domain section relevant to the affected file. Add --trace to create a bug spec for traceability.
+metadata:
+  managed-by: aiagents
 ---
 
 # Fix
@@ -30,7 +32,9 @@ Load only the domain section that matches the affected code — nothing else.
    - Migration / model / query → `[context.data]`
    - Test file → `[context.testing]`
    - Pipeline / infra / config → `[context.devops]`
+   - Live platform config (workflows, agents, CRM, messaging templates) → `[context.automation]`
 4. Read **only** that domain section from `.ai/project-context.md`.
+   - If the affected code uses a technology listed under `Stack skills`, also load that stack skill.
 5. Read the affected file(s) — no more than needed.
 6. Identify root cause. State hypothesis before fixing if uncertain.
 7. Apply the minimal fix that resolves the bug without side effects.

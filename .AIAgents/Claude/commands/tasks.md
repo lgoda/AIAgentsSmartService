@@ -22,7 +22,8 @@ $ARGUMENTS
 1. Resolve spec directory as above.
 2. Read `plan.md` and convert each phase's milestones into atomic tasks.
 3. For each task assign:
-   - **Domain**: backend | frontend | data | testing | devops
+   - **Domain**: backend | frontend | data | testing | devops | automation
+   - **Skills** (optional): stack skills the task needs, chosen from `Stack skills` in `.ai/project-context.md`
    - **Dependencies**: task IDs that must complete first (empty = can start immediately)
    - **Validation**: concrete check that confirms the task is done
    - **Parallel**: yes | no (can it run alongside other domain tasks?)
@@ -44,6 +45,7 @@ T01 → T03 → T05 → T07
 
 ### T01 — <task name>
 - Domain: backend
+- Skills: integrations   (optional line)
 - Depends on: —
 - Parallel: yes
 - Validation: <concrete check>
@@ -67,3 +69,5 @@ T01 → T03 → T05 → T07
 - Each task must have exactly one domain — split cross-domain work into separate tasks
 - Validation must be concrete and independently verifiable
 - Tasks with no dependencies and different domains are candidates for parallel sub-agents in `/implement`
+- `Skills:` is optional; list only stack skills the task actually needs
+- Live platform work (workflows, agents, CRM, messaging) is `automation`, never mixed with code domains

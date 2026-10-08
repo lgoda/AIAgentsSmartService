@@ -1,13 +1,15 @@
 ---
 name: scan
 description: Scan the repository and generate the full project context plus domain-specific context sections in .ai/project-context.md.
+metadata:
+  managed-by: aiagents
 ---
 
 # Scan
 
 ## Arguments
 
-Optional domain focus: `backend`, `frontend`, `data`, `testing`, `devops`. Omit to generate all sections.
+Optional domain focus: `backend`, `frontend`, `data`, `testing`, `devops`, `automation`. Omit to generate all sections.
 
 ## Output
 
@@ -28,11 +30,14 @@ without needing the rest of the file.
    - **data**: databases, ORM/query layer, migration files, key models, caching, validation.
    - **testing**: test frameworks, test file patterns, coverage config, CI test gates.
    - **devops**: cloud provider, CI/CD platform, deployment scripts, environment names, secrets references, monitoring.
+   - **automation**: live platforms in use and which is the system of record (workflow engines, voice or chat agent consoles, CRM, messaging, platform-side database functions), account or instance to MCP server mapping, publish policy, timezone, locale and phone country, change-record locations, docs routing. Docs-only repositories (no package manifest, docs describing live platforms) are expected: populate this section and mark code domains `N/A — not detected`.
 3. Populate the top-level sections (Metadata, Stack, Architecture, Engineering Standards, Agent Instructions).
+   - Set `Stack skills` to the stack skills (listed in `CLAUDE.md`) whose description matches technologies found in the repo, or `none`.
 4. Populate each `[context.<domain>]` section with only the fields relevant to that domain.
    - If a domain has no evidence in the repo, write `N/A — not detected` for each field.
    - Mark uncertain fields as `NEEDS CLARIFICATION`.
 5. Write the result to `.ai/project-context.md`.
+   - If the file already exists, update it in place: add missing sections (for example `[context.automation]`), refresh stale fields, never delete existing sections or user-written content.
 6. Update `CLAUDE.md` with any project-specific constraints discovered.
 7. Return:
    - Confidence level per domain (high / medium / low)
@@ -48,6 +53,7 @@ without needing the rest of the file.
 | data     | `[context.data]`              |
 | testing  | `[context.testing]`           |
 | devops   | `[context.devops]`            |
+| automation | `[context.automation]`        |
 
 ## Rules
 

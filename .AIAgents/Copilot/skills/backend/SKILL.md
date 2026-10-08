@@ -1,6 +1,8 @@
 ---
 name: backend
 description: Implement backend endpoints, services, business logic, auth, and integrations following project conventions. Model-agnostic — works with any Copilot model.
+metadata:
+  managed-by: aiagents
 ---
 
 # Skill: backend
@@ -32,6 +34,7 @@ Before starting, read only:
 2. The specific file(s) to modify
 
 Do NOT load frontend, data migration, or devops sections.
+If the task touches a technology listed under `Stack skills` in `.ai/project-context.md`, also load that stack skill (open its `references/` only where its index points). If a listed stack skill is not installed, say so and continue with the domain rules.
 
 ## Inputs
 
